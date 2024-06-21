@@ -1,0 +1,182 @@
+-- Sequences
+CREATE SEQUENCE clientes_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+CREATE SEQUENCE carrito_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+CREATE SEQUENCE orden_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+CREATE SEQUENCE items_de_orden_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+CREATE SEQUENCE items_wishlist_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+CREATE SEQUENCE tarjeta_credito_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+CREATE SEQUENCE wishlist_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+CREATE SEQUENCE usuarios_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+CREATE SEQUENCE productos_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+CREATE SEQUENCE detalles_de_pago_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+CREATE SEQUENCE direccion_cliente_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE;
+
+-- DML
+CREATE TABLE tipo_usuario (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('usuarios_id_seq'),
+  nombre varchar(50)
+);
+
+CREATE TABLE metodos_de_pago (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('metodos_de_pago_id_seq'),
+  nombre varchar(50)
+);
+
+CREATE TABLE categoria_producto (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('categoria_producto_id_seq'),
+  name varchar(50),
+  desc text,
+  fecha_creacion timestamp,
+  fecha_modificacion timestamp
+);
+
+CREATE TABLE proveedores (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('proveedores_id_seq'),
+  nombre varchar(50),
+  telefono int,
+  correo varchar(100)
+);
+
+CREATE TABLE inventario (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('inventario_id_seq'),
+  sku varchar(8) NOT NULL,
+  UPC int NOT NULL,
+  cantidad int NOT NULL,
+  costo_unitario numeric NOT NULL,
+  fecha_reorden date NOT NULL,
+  fecha_creacion timestamp NOT NULL,
+  fecha_modificacion timestamp NOT NULL
+);
+
+CREATE TABLE promociones (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('promociones_id_seq'),
+  nombre varchar(50) NOT NULL,
+  descripcion text,
+  porcentage_descuento numeric NOT NULL,
+  activo boolean NOT NULL,
+  fecha_inicio date,
+  fecha_fin date,
+  fecha_creacion timestamp,
+  fecha_modificacion timestamp
+);
+
+CREATE TABLE wishlist (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('wishlist_id_seq'),
+  total numeric
+);
+
+CREATE TABLE usuarios (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('usuarios_id_seq'),
+  username varchar(50) NOT NULL,
+  contraseña varchar(100) NOT NULL,
+  email varchar(100) NOT NULL,
+  telefono_celular numeric,
+  tipo int NOT NULL,
+  fecha_nacimiento date,
+  fecha_creacion timestamp NOT NULL,
+  fecha_modificacion timestamp NOT NULL,
+  CONSTRAINT fk_tipo_usuario FOREIGN KEY (tipo) REFERENCES tipo_usuario (id)
+);
+
+CREATE TABLE clientes (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('clientes_id_seq'),
+  nombre varchar(50) NOT NULL,
+  apellido varchar(50) NOT NULL,
+  usuario_id int NOT NULL,
+  wishlist_id int NOT NULL,
+  CONSTRAINT fk_usuario_id FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
+  CONSTRAINT fk_wishlist_id FOREIGN KEY (wishlist_id) REFERENCES wishlist (id)
+);
+
+CREATE TABLE tarjeta_credito (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('tarjeta_credito_id_seq'),
+  numero int NOT NULL,
+  nombre varchar(50) NOT NULL,
+  fecha_exp date NOT NULL,
+  codigo_cvc int NOT NULL,
+  proveedor varchar(20),
+  cliente_id int NOT NULL,
+  CONSTRAINT fk_cliente_id_tarjeta FOREIGN KEY (cliente_id) REFERENCES clientes (id)
+);
+
+CREATE TABLE carrito (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('carrito_id_seq'),
+  cliente_id int NOT NULL,
+  total numeric,
+  CONSTRAINT fk_cliente_id FOREIGN KEY (cliente_id) REFERENCES clientes (id)
+);
+
+CREATE TABLE productos (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('productos_id_seq'),
+  nombre varchar(50) NOT NULL,
+  descripcion text,
+  precio numeric NOT NULL,
+  proveedor_id int NOT NULL,
+  categoria_id int NOT NULL,
+  inventario_id int NOT NULL,
+  promociones_id int,
+  fecha_creacion timestamp NOT NULL,
+  fecha_modificacion timestamp NOT NULL,
+  CONSTRAINT fk_proveedor_id FOREIGN KEY (proveedor_id) REFERENCES proveedores (id),
+  CONSTRAINT fk_categoria_id FOREIGN KEY (categoria_id) REFERENCES categoria_producto (id),
+  CONSTRAINT fk_inventario_id FOREIGN KEY (inventario_id) REFERENCES inventario (id),
+  CONSTRAINT fk_promociones_id FOREIGN KEY (promociones_id) REFERENCES promociones (id)
+);
+
+CREATE TABLE items_carrito (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('items_carrito_id_seq'),
+  carrito_id int NOT NULL,
+  producto_id int NOT NULL,
+  cantidad int,
+  CONSTRAINT fk_carrito_id FOREIGN KEY (carrito_id) REFERENCES carrito (id),
+  CONSTRAINT fk_producto_id FOREIGN KEY (producto_id) REFERENCES productos (id)
+);
+
+CREATE TABLE detalles_de_pago (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('detalles_de_pago_id_seq'),
+  monto numeric NOT NULL,
+  estado varchar(30) NOT NULL,
+  metodo_pago_id int NOT NULL,
+  CONSTRAINT fk_metodo_pago_id FOREIGN KEY (metodo_pago_id) REFERENCES metodos_de_pago (id)
+);
+
+CREATE TABLE orden (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('orden_id_seq'),
+  total numeric NOT NULL,
+  id_pago int NOT NULL,
+  id_cliente int NOT NULL,
+  CONSTRAINT fk_id_pago FOREIGN KEY (id_pago) REFERENCES detalles_de_pago (id),
+  CONSTRAINT fk_id_cliente FOREIGN KEY (id_cliente) REFERENCES clientes (id)
+);
+
+CREATE TABLE items_de_orden (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('items_de_orden_id_seq'),
+  producto_id int NOT NULL,
+  cantidad int NOT NULL,
+  order_id int NOT NULL,
+  CONSTRAINT fk_producto_id_orden FOREIGN KEY (producto_id) REFERENCES productos (id),
+  CONSTRAINT fk_order_id FOREIGN KEY (order_id) REFERENCES orden (id)
+);
+
+CREATE TABLE items_wishlist (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('items_wishlist_id_seq'),
+  producto_id int NOT NULL,
+  cantidad int NOT NULL,
+  wishlist_id int NOT NULL,
+  CONSTRAINT fk_producto_id_wishlist FOREIGN KEY (producto_id) REFERENCES productos (id),
+  CONSTRAINT fk_wishlist_id_items FOREIGN KEY (wishlist_id) REFERENCES wishlist (id)
+);
+
+CREATE TABLE direccion_cliente (
+  id int PRIMARY KEY NOT NULL DEFAULT nextval('direccion_cliente_id_seq'),
+  numero_casa int,
+  calle varchar(200),
+  corregimiento varchar(50),
+  Distrito varchar(50),
+  provincia varchar(50),
+  tipo_recidencia varchar(50),
+  descripcion text,
+  cliente_id int NOT NULL,
+  CONSTRAINT fk_cliente_id_direccion FOREIGN KEY (cliente_id) REFERENCES clientes (id)
+);
+
