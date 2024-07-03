@@ -1,0 +1,42 @@
+/*basic shi*/
+
+body{
+	width: 100%;
+	margin: 0;
+}
+
+/*Header*/
+header{
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	direction: row;
+	padding: 10px 100px 10px 50px;
+	background: #f9924e;
+}
+
+#navbar{
+	display: flex;
+	alignt-items: center;
+	justify-cotent: center;
+
+}
+
+#navbar li{
+	list-style: none;
+	padding: 0 20px;
+}
+
+#navbar li a{
+	text-decoration: none;
+	font-size: 20px;
+	font-weight: bold;
+	color: white;
+	transition: 0.1s ease;
+	
+}
+
+#navbar li a:hover,
+#navbar li a.active{
+	color: #3498DB;
+}
